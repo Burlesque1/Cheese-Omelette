@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 
-import csv
-import StringIO
-
-
-infile = open('/home/cloudera/Desktop/BigData/Value2008_full.csv', 'r')
-outfile = open('/home/cloudera/Desktop/Value2008.csv', 'w')
+infile = open('/home/cloudera/Desktop/BigData/Value2015_full.txt', 'r')
+outfile = open('/home/cloudera/Desktop/Value2015.csv', 'w')
 attributes = []
 for line in infile:
 	line = line.strip()
-	attributes = line.split(',')
-	out = [attributes[1], ',', attributes[2], ',',attributes[9], ',', attributes[10], '\n']
+	attributes = line.split('\t')
+	if(attributes[0] == ''):
+		continue
+	out = [attributes[1], '\t', attributes[2], '\t',attributes[12].replace(',',''), '\t', attributes[13], '\n']
 	outfile.writelines(out)
-
