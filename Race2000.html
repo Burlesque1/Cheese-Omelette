@@ -1,0 +1,124 @@
+<html>  
+  <head>  
+        <meta charset="utf-8">  
+        <title>Brooklyn House Vacancy Map</title>  
+  </head> 
+<style>
+
+</style>
+<body>
+	 <div class = "mouseover"></div>
+</body>
+
+<script src="bower_components/d3/d3.min.js"></script>
+<script src="bower_components/jQuery/dist/jquery.min.js"></script>
+<script src="bower_components/heatmap.js-amd/build/heatmap.js"></script>
+<link rel=”stylesheet” type=”text/css” href=my.css”>
+<script>
+
+
+	var width  = 1800;
+	var height = 1800;
+
+	 var svg = d3.select("body").append("svg")
+      .attr("id", "map")
+	  .attr("width", width)
+	  .attr("height", height); 
+		
+	var projection = d3.geo.mercator()
+      .scale(380000)
+      .rotate([74, -40 - 45 / 60, 0])
+	  .translate([width / 4, height  / 30 ]);
+	
+	var path = d3.geo.path().projection(projection);
+	
+	var Brooklyn = [];
+			
+	d3.json("2000 Census Tracts.geojson", function(error, map) {
+		//console.log(map.features[0]["geometry"]["coordinates"]);
+		for(var index = 0; index < map.features.length; index++){
+			if(map["features"][index]["properties"]["boro_name"] == "Brooklyn")
+				Brooklyn.push(map.features[index]);
+		}
+		d3.tsv("Race2000bk.csv", function(error, data) {
+			console.log(data);
+			var flag = true;
+			var max = 0;
+			for(var index1 = 0; index1 < data.length; index1++){
+					var ct2 = parseInt(data[index1]["censustrack"]);
+					//console.log(ct2);
+					if(flag){
+						if(index1 == 0)
+							ct2 *= 100;
+						else if(index1 > 0)
+						{
+							var ct3 = parseInt(data[index1 - 1]["censustrack"]);
+							if(ct3 * 100 > ct2)
+								ct2 *= 100;
+							else
+								flag = false;
+						}
+					}
+					else{
+						var ct3 = parseInt(data[index1 - 1]["censustrack"]);
+						if(ct2 < ct3)
+						{
+							flag = true;
+							ct2 *= 100;
+						}
+					}
+					
+				
+				for(var index2 = 0; index2 < Brooklyn.length; index2++){
+					var ct1 = parseInt(Brooklyn[index2]["properties"]["ct2000"]);
+					//console.log(ct1);
+					if(ct1 == ct2)
+					{
+						var total = parseFloat(data[index1]["total"]);
+						var black = parseFloat(data[index1]["black"]);
+						var blackPercentage = black / total;
+						console.log( blackPercentage);
+						Brooklyn[index2]["properties"]["BlackPercentage"] = blackPercentage * 100;
+						var percentage = parseFloat(Brooklyn[index2]["properties"]["BlackPercentage"]);
+						if(percentage > max)
+							max = percentage;
+					}
+				}
+			}
+			//console.log(Brooklyn);
+			
+			var darkPurple = d3.rgb("#5B00AE");
+			var lightPurple = d3.rgb("#E6CAFF");
+			var color = d3.interpolate(lightPurple, darkPurple);
+			
+			var linear = d3.scale.linear()
+							.domain([0, max])
+							.range([0, 1]);
+			
+			
+			svg.append("g")
+				.attr("class", "MAP")
+				.selectAll("path")
+				.data(Brooklyn)
+				.enter()
+				.append("path")
+				.attr("stroke","#000")
+				.attr("stroke-width",1)
+				.attr("fill",  function(data){
+					if(!data["properties"]["BlackPercentage"])
+						return "#8E8E8E";
+					else
+						return color(linear(parseFloat(data["properties"]["BlackPercentage"])));
+				})
+				.attr("d", path );
+
+		});
+		
+			
+		});
+	
+
+</script>
+
+
+</html>  
