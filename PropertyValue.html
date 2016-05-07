@@ -18,7 +18,7 @@
 
 
 	var width  = 1800;
-	var height = 1500;
+	var height = 1800;
 
 	 var svg = d3.select("body").append("svg")
       .attr("id", "map")
@@ -27,8 +27,8 @@
 		
 	var projection = d3.geo.mercator()
       .scale(430000)
-      .rotate([74, -40 - 45 / 60, 110])
-	    .translate([width / 8, height* 6 / 7]);
+      .rotate([74, -40 - 45 / 60, 0])
+	  .translate([width / 3, height  / 6 ]);
 	
 	var path = d3.geo.path().projection(projection);
 	
