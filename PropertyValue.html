@@ -1,0 +1,149 @@
+<html>  
+  <head>  
+        <meta charset="utf-8">  
+        <title>Brooklyn Property Value Map</title>  
+  </head> 
+<style>
+
+</style>
+<body>
+	 <div class = "mouseover"></div>
+</body>
+
+<script src="bower_components/d3/d3.min.js"></script>
+<script src="bower_components/jQuery/dist/jquery.min.js"></script>
+<script src="bower_components/heatmap.js-amd/build/heatmap.js"></script>
+<link rel=”stylesheet” type=”text/css” href=my.css”>
+<script>
+
+
+	var width  = 1800;
+	var height = 1500;
+
+	 var svg = d3.select("body").append("svg")
+      .attr("id", "map")
+	  .attr("width", width)
+	  .attr("height", height); 
+		
+	var projection = d3.geo.mercator()
+      .scale(430000)
+      .rotate([74, -40 - 45 / 60, 110])
+	    .translate([width / 8, height* 6 / 7]);
+	
+	var path = d3.geo.path().projection(projection);
+	
+	var Brooklyn = [];
+			
+	d3.json("nta.geojson", function(error, map) {
+		//console.log(map.features[0]["geometry"]["coordinates"]);
+	
+		for(var index = 0; index < map.features.length; index++){
+			if(map["features"][index]["properties"]["BoroName"] == "Brooklyn")
+				Brooklyn.push(map.features[index]);
+		}
+		
+		d3.tsv("Value2008bk.csv", function(error, data) {
+
+			for(var index1 = 0; index1 < data.length; index1++){
+				for(var index2 = 0; index2 < Brooklyn.length; index2++){
+					if(Brooklyn[index2]["properties"]["NTAName"].toUpperCase() == data[index1]["Neighbourhood"])
+						Brooklyn[index2]["properties"]["Price08"] = data[index1]["Price"];
+				}
+			}
+			for(var index2 = 0; index2 < Brooklyn.length; index2++){
+				if(Brooklyn[index2]["properties"]["Price08"] == undefined)
+					Brooklyn[index2]["properties"]["Price08"] = "0";
+			}
+				d3.tsv("Value2015bk.csv", function(error, data) {
+
+					for(var index1 = 0; index1 < data.length; index1++){
+						for(var index2 = 0; index2 < Brooklyn.length; index2++){
+							if(Brooklyn[index2]["properties"]["NTAName"].toUpperCase() == data[index1]["Neighbourhood"])
+								Brooklyn[index2]["properties"]["Price15"] = data[index1]["Price"];
+						}
+					}
+					for(var index2 = 0; index2 < Brooklyn.length; index2++){
+						if(Brooklyn[index2]["properties"]["Price15"] == undefined)
+							Brooklyn[index2]["properties"]["Price15"] = "0";
+					}
+					var max = 0;
+					for(var index = 0; index < Brooklyn.length; index++){
+						var diff = parseFloat(Brooklyn[index]["properties"]["Price15"]) - parseFloat(Brooklyn[index]["properties"]["Price08"]);
+						if (diff > max)
+							max = diff;
+						Brooklyn[index]["properties"]["Diff"] = diff;
+					}
+					console.log(Brooklyn);
+					var orange = d3.rgb(253, 120, 3);
+					var lightOrange = d3.rgb(255, 201, 154);
+					var color = d3.interpolate(lightOrange, orange);
+					
+
+					var linear = d3.scale.linear()
+									.domain([0, max])
+									.range([0, 1]);
+					
+					svg.append("g")
+						.attr("class", "MAP")
+						.selectAll("path")
+						.data( Brooklyn )
+						.enter()
+						.append("path")
+						.attr("stroke","#000")
+						.attr("stroke-width",1)
+						.attr("fill", function(data){
+							var diff = parseFloat(data["properties"]["Diff"]);
+							console.log(diff);
+							if(diff <= 0)
+								return "#8E8E8E";
+							else
+								return color(linear(diff));
+						})
+						.attr("d", path )
+						.on("mouseover", function(data){
+							$(".mouseover")
+								.html("District Name: " + data["properties"]["NTAName"] + "\n Price in 2008: " + data["properties"]["Price08"] + "\n Price in 2015: " + data["properties"]["Price15"] )
+								.css("display","inline")
+								.css("position","absolute")
+								.css("background","black")
+								.css("background-color",d3.rgb(0,0,0,0.5))
+								.css("border","1px solid #131313")
+								.css("margin-left","100px")
+								.css("margin-top","50px")
+								.css("padding","5px 8px");
+							d3.select(this).style("fill-opacity", 0.7);
+						})
+						.on("mouseout", function(data){
+							$(".mouseover")
+								.css("display","none")
+								.css("color","#FFF")
+								.css("position","absolute")
+								.css("background","black")
+								.css("background-color",d3.rgb(0,0,0,0.5))
+								.css("border","1px solid #131313")
+								.css("margin-left","100px")
+								.css("margin-top","50px")
+								.css("padding","5px 8px");
+							d3.select(this).style("fill-opacity", 1);
+						});
+						
+						d3.select('html') // Selects the 'html' element
+						  .on('mousemove', function(){
+								var locs = d3.mouse(this);
+								locs[0] += 15;
+								locs[1] += 5;
+								$(".mouseover").css("margin-left", locs[0]);
+								$(".mouseover").css("margin-top", locs[1]);
+							});
+				});
+		});
+		
+		
+		
+	});
+	
+
+</script>
+
+
+</html>  
