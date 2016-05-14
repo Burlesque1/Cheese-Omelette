@@ -159,8 +159,8 @@
 						.attr("fill", function(data){
 							var diff = parseFloat(data["properties"]["Diff"]);
 							// console.log(diff);
-							if(["properties"]["Price15"] < ["properties"]["Price08"])
-								return "	#2828FF";
+							if(parseFloat(data["properties"]["Price15"]) < parseFloat(data["properties"]["Price08"]))
+								return "#AAAAFF";
 							else if(diff <= 0)
 								return "#8E8E8E";
 							else
