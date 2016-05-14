@@ -29,16 +29,18 @@
 		stroke: black;
 		shape-rendering: crispEdges;
 	}
-
 	.axis text {
 		font-family: sans-serif;
 		font-size: 11px;
 	}
-
+    .inner_line path,
+    .inner_line line {
+    fill: none;
+    stroke:#E7E7E7;
+    shape-rendering: crispEdges;
+    }
 	.MyRect {
-
 	}
-
 	.MyText {
 		fill: white;
 		text-anchor: middle;
@@ -61,6 +63,20 @@
 	var yScale = d3.scale.linear()
 		.domain([0,100])
 		.range([height - padding.top - padding.bottom, 0]);
+    
+    // add grid
+    var yInner = d3.svg.axis()
+    .scale(yScale)
+    .tickSize(-(width - padding.left - padding.right),0,0)
+    .tickFormat("")
+    .orient("left")
+    .ticks(10);
+
+    svg.append("g")
+    .attr("class", "inner_line")
+    .attr("transform", "translate("+ padding.left + "," + padding.top + ")")
+    .call(yInner);
+        
 	var xAxis = d3.svg.axis()
 		.scale(xScale)
 		.orient("bottom");
@@ -75,15 +91,12 @@
 		.attr("class","axis")
 		.attr("transform","translate(" + padding.left + "," + padding.top + ")")
 		.call(yAxis);
-
 </script> 
     
    <div class = "mouseover"></div>
     <script> 
-
         var width  = 800;
 	    var height = 600;
-
     var svg = d3.select("body").append("svg")
       .attr("id", "map")
 	  .attr("width", width)
@@ -107,7 +120,6 @@
 		}
 		
 		d3.tsv("Value2008bk.csv", function(error, data) {
-
 			for(var index1 = 0; index1 < data.length; index1++){
 				for(var index2 = 0; index2 < Brooklyn.length; index2++){
 					if(Brooklyn[index2]["properties"]["NTAName"].toUpperCase() == data[index1]["Neighbourhood"])
@@ -121,7 +133,6 @@
             // console.log(Brooklyn["properties"]);
         
             d3.tsv("Value2015bk.csv", function(error, data) {
-
 					for(var index1 = 0; index1 < data.length; index1++){
 						for(var index2 = 0; index2 < Brooklyn.length; index2++){
 							if(Brooklyn[index2]["properties"]["NTAName"].toUpperCase() == data[index1]["Neighbourhood"])
@@ -194,11 +205,11 @@
 		.attr("width", width)
 		.attr("height", height);
 	var padding = {left:30, right:30, top:20, bottom:20};
-
-	var dataset = [];
+	
+    var dataset = [];
 		dataset.push(Number(data["properties"]["Price08"]).toFixed(3));
         dataset.push(Number(data["properties"]["Price15"]).toFixed(3));
-
+                        
 	var xScale = d3.scale.ordinal()
 		.domain([2008,2015])
 		.rangeRoundBands([0, width - padding.left - padding.right]);
@@ -211,7 +222,18 @@
 	var yAxis = d3.svg.axis()
 		.scale(yScale)
 		.orient("left");
+     // add grid
+    var yInner = d3.svg.axis()
+    .scale(yScale)
+    .tickSize(-(width - padding.left - padding.right),0,0)
+    .tickFormat("")
+    .orient("left")
+    .ticks(10);
 
+    svg.append("g")
+    .attr("class", "inner_line")
+    .attr("transform", "translate("+ padding.left + "," + padding.top + ")")
+    .call(yInner);
 	svg.append("g")
 		.attr("class","axis")
 		.attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
@@ -242,7 +264,6 @@
 			return height - padding.top - padding.bottom - yScale(d);
 		})
 		.attr("fill","steelblue")		
-
 	var texts = svg.selectAll(".MyText")
 		.data(dataset)
 		.enter()
