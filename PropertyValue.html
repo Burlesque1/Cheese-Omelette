@@ -3,32 +3,96 @@
         <meta charset="utf-8">  
         <title>Brooklyn Property Value Map</title>  
   </head> 
-<style>
 
-</style>
-<body>
-	 <div class = "mouseover"></div>
-</body>
-
-<script src="bower_components/d3/d3.min.js"></script>
+  <script src="bower_components/d3/d3.min.js"></script>
 <script src="bower_components/jQuery/dist/jquery.min.js"></script>
 <script src="bower_components/heatmap.js-amd/build/heatmap.js"></script>
-<link rel=”stylesheet” type=”text/css” href=my.css”>
-<script>
+<link rel=”stylesheet” type=”text/css” href=my.css”>  
+    <style>
+        
+        #default{
+            color:grey;
+            width: 400;
+            height: 480;
+            position: absolute;
+            left: 650;
+            top:50;
+            font-family:"Georgia";
+            border: 1px grey ridge;
+            padding-bottom: 0px;
+/*          margin: 100px 100px 100px 100px;*/
+        }    
+        
+    .axis path,
+	.axis line{
+		fill: none;
+		stroke: black;
+		shape-rendering: crispEdges;
+	}
 
+	.axis text {
+		font-family: sans-serif;
+		font-size: 11px;
+	}
 
-	var width  = 1800;
-	var height = 1800;
+	.MyRect {
 
-	 var svg = d3.select("body").append("svg")
+	}
+
+	.MyText {
+		fill: white;
+		text-anchor: middle;
+	}
+    </style>
+<body>
+    <div id="default">District:   <br>Price in 2008:  <br>Price in 2015:  </div>
+    <script>   
+	//---------------------initialization-----------------------------
+	var width = 400;
+	var height = 400;
+	var svg = d3.select("#default")
+		.append("svg")
+		.attr("width", width)
+		.attr("height", height);
+	var padding = {left:30, right:30, top:20, bottom:20};
+	var xScale = d3.scale.ordinal()
+		.domain([2008,2015])
+		.rangeRoundBands([0, width - padding.left - padding.right]);
+	var yScale = d3.scale.linear()
+		.domain([0,100])
+		.range([height - padding.top - padding.bottom, 0]);
+	var xAxis = d3.svg.axis()
+		.scale(xScale)
+		.orient("bottom");
+	var yAxis = d3.svg.axis()
+		.scale(yScale)
+		.orient("left");
+	svg.append("g")
+		.attr("class","axis")
+		.attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
+		.call(xAxis); 
+	svg.append("g")
+		.attr("class","axis")
+		.attr("transform","translate(" + padding.left + "," + padding.top + ")")
+		.call(yAxis);
+
+</script> 
+    
+   <div class = "mouseover"></div>
+    <script> 
+
+        var width  = 800;
+	    var height = 600;
+
+    var svg = d3.select("body").append("svg")
       .attr("id", "map")
 	  .attr("width", width)
 	  .attr("height", height); 
 		
 	var projection = d3.geo.mercator()
-      .scale(430000)
+      .scale(180000)
       .rotate([74, -40 - 45 / 60, 0])
-	  .translate([width / 3, height  / 6 ]);
+	  .translate([width / 5, height  / 40 ]);
 	
 	var path = d3.geo.path().projection(projection);
 	
@@ -54,7 +118,9 @@
 				if(Brooklyn[index2]["properties"]["Price08"] == undefined)
 					Brooklyn[index2]["properties"]["Price08"] = "0";
 			}
-				d3.tsv("Value2015bk.csv", function(error, data) {
+            // console.log(Brooklyn["properties"]);
+        
+            d3.tsv("Value2015bk.csv", function(error, data) {
 
 					for(var index1 = 0; index1 < data.length; index1++){
 						for(var index2 = 0; index2 < Brooklyn.length; index2++){
@@ -73,12 +139,11 @@
 							max = diff;
 						Brooklyn[index]["properties"]["Diff"] = diff;
 					}
-					console.log(Brooklyn);
+					// console.log(Brooklyn);
 					var orange = d3.rgb(253, 120, 3);
 					var lightOrange = d3.rgb(255, 201, 154);
 					var color = d3.interpolate(lightOrange, orange);
 					
-
 					var linear = d3.scale.linear()
 									.domain([0, max])
 									.range([0, 1]);
@@ -93,57 +158,130 @@
 						.attr("stroke-width",1)
 						.attr("fill", function(data){
 							var diff = parseFloat(data["properties"]["Diff"]);
-							console.log(diff);
+							// console.log(diff);
 							if(diff <= 0)
 								return "#8E8E8E";
 							else
 								return color(linear(diff));
 						})
 						.attr("d", path )
-						.on("mouseover", function(data){
-							$(".mouseover")
-								.html("District Name: " + data["properties"]["NTAName"] + "\n Price in 2008: " + data["properties"]["Price08"] + "\n Price in 2015: " + data["properties"]["Price15"] )
-								.css("display","inline")
-								.css("position","absolute")
-								.css("background","black")
-								.css("background-color",d3.rgb(0,0,0,0.5))
-								.css("border","1px solid #131313")
-								.css("margin-left","100px")
-								.css("margin-top","50px")
-								.css("padding","5px 8px");
-							d3.select(this).style("fill-opacity", 0.7);
-						})
+                    
+    //---------------------------------hover---------------------------------------
+		.on("mouseover", function(data){
+			$(".mouseover")
+		      .html("District Name: " + data["properties"]["NTAName"] + "<br> Price in 2008: " +Number(data["properties"]["Price08"]).toFixed(3) + "</br> Price in 2015: " + Number(data["properties"]["Price15"]).toFixed(3) )
+			.css("display","inline")
+			.css("position","absolute")
+			.css("background","black")
+			.css("background-color",d3.rgb(255,255,255,255))
+			.css("border","1px solid #131313")
+			.css("margin-left","100px")
+			.css("margin-top","0px")
+			.css("padding","5px 8px");
+			d3.select(this).style("fill-opacity", 0.7);
+            
+            d3.select("#default")
+                .html("District: "+data["properties"]["NTAName"]+ "<br> Price in 2008: $" + Number(data["properties"]["Price08"]).toFixed(3)+"/sq" + "<br>Price in 2015: $" + Number(data["properties"]["Price15"]).toFixed(3)+"/sq")
+        
+    var width=400;
+    var height=400;
+                        
+	//add a SVG canvas into body	
+	var svg = d3.select("#default")
+		.append("svg")
+		.attr("width", width)
+		.attr("height", height);
+	var padding = {left:30, right:30, top:20, bottom:20};
+
+	var dataset = [];
+		dataset.push(Number(data["properties"]["Price08"]).toFixed(3));
+        dataset.push(Number(data["properties"]["Price15"]).toFixed(3));
+
+	var xScale = d3.scale.ordinal()
+		.domain([2008,2015])
+		.rangeRoundBands([0, width - padding.left - padding.right]);
+	var yScale = d3.scale.linear()
+		.domain([0,100])
+		.range([height - padding.top - padding.bottom, 0]);
+	var xAxis = d3.svg.axis()
+		.scale(xScale)
+		.orient("bottom");
+	var yAxis = d3.svg.axis()
+		.scale(yScale)
+		.orient("left");
+
+	svg.append("g")
+		.attr("class","axis")
+		.attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
+		.call(xAxis); 
+		
+	svg.append("g")
+		.attr("class","axis")
+		.attr("transform","translate(" + padding.left + "," + padding.top + ")")
+		.call(yAxis);
+						
+	// blanket between rects
+	var rectPadding = 100;
+                        
+	var rects = svg.selectAll(".MyRect")
+		.data(dataset)
+		.enter()
+		.append("rect")
+		.attr("class","MyRect")
+		.attr("transform","translate(" + padding.left + "," + padding.top + ")")
+		.attr("x", function(d,i){
+			return xScale(2008+7*i) + rectPadding/2;
+		} )
+		.attr("y",function(d){
+			return yScale(d);
+		})
+		.attr("width", xScale.rangeBand() - rectPadding )
+		.attr("height", function(d){
+			return height - padding.top - padding.bottom - yScale(d);
+		})
+		.attr("fill","steelblue")		
+
+	var texts = svg.selectAll(".MyText")
+		.data(dataset)
+		.enter()
+		.append("text")
+		.attr("class","MyText")
+		.attr("transform","translate(" + padding.left + "," + padding.top + ")")
+		.attr("x", function(d,i){
+			return xScale(2008+7*i) + rectPadding/2;
+		} )
+		.attr("y",function(d){
+			return yScale(d);
+		})
+		.attr("dx",function(){
+			return (xScale.rangeBand() - rectPadding)/2;
+		})
+		.attr("dy",function(d){
+			return 20;
+		})
+		.text(function(d){
+			return d;
+		});
+                    })        
 						.on("mouseout", function(data){
 							$(".mouseover")
-								.css("display","none")
-								.css("color","#FFF")
+								//.css("display","none")
+								.css("color","#000")
+                                .css("font-family","Georgia")
 								.css("position","absolute")
 								.css("background","black")
-								.css("background-color",d3.rgb(0,0,0,0.5))
+								.css("background-color",d3.rgb(255,255,255,255))
 								.css("border","1px solid #131313")
 								.css("margin-left","100px")
-								.css("margin-top","50px")
+								.css("margin-top","0px")
 								.css("padding","5px 8px");
 							d3.select(this).style("fill-opacity", 1);
 						});
-						
-						d3.select('html') // Selects the 'html' element
-						  .on('mousemove', function(){
-								var locs = d3.mouse(this);
-								locs[0] += 15;
-								locs[1] += 5;
-								$(".mouseover").css("margin-left", locs[0]);
-								$(".mouseover").css("margin-top", locs[1]);
-							});
 				});
-		});
-		
-		
-		
+		});		
 	});
-	
-
+        
 </script>
-
+</body>
 
 </html>  
