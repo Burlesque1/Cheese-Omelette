@@ -1,0 +1,326 @@
+<html>  
+  <head>  
+        <meta charset="utf-8">  
+        <title>Brooklyn House Vacancy Map</title>  
+  </head> 
+    <script src="bower_components/d3/d3.min.js"></script>
+<script src="bower_components/jQuery/dist/jquery.min.js"></script>
+<script src="bower_components/heatmap.js-amd/build/heatmap.js"></script>
+<link rel=”stylesheet” type=”text/css” href=my.css”>
+<style>
+ #default{
+            color:black;
+            width: 400;
+            height: 480;
+            position: absolute;
+            left: 650;
+            top:130;
+            font-family:"Georgia";
+            font-weight:bold;
+            border: 1px grey ridge;
+            padding-bottom: 0px;
+            text-align:center;
+/*          margin: 100px 100px 100px 100px;*/
+        }    
+        #title{
+            color:red;
+            left: 1350;
+            top:30;
+            font-size: 30px;
+            font-family:fantasy;
+            text-align:center;
+/*
+            border: 10px grey ridge;
+            padding-bottom: 0px;
+*/
+        }
+    .axis path,
+	.axis line{
+		fill: none;
+		stroke: black;
+		shape-rendering: crispEdges;
+	}
+	.axis text {
+		font-family: sans-serif;
+		font-size: 11px;
+	}
+    .inner_line path,
+    .inner_line line {
+    fill: none;
+    stroke:#E7E7E7;
+    shape-rendering: crispEdges;
+    }
+	.MyRect {
+	}
+	.MyText {
+		fill: white;
+		text-anchor: middle;
+	}
+</style>
+<body>
+	 <div class = "mouseover"></div>
+    <div class = "mouseover"></div>
+     <div id="title">Gentrification - House Vacancy Rate in Brooklyn 2010 </div>
+     <div id="default">District:   <br>Vacancy Rate in 2000:  <br>Vacancy Rate in 2010:  </div>
+    <script>   
+	//---------------------initialization-----------------------------
+    var width = 400;
+    var height = 400;	
+    var svg = d3.select("#default")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+    var padding = {left:50, right:30, top:20, bottom:20};
+    var xScale = d3.scale.ordinal()
+                    .domain([2000,2010])
+                    .rangeRoundBands([0, width - padding.left - padding.right]);
+    var yScale = d3.scale.linear()
+                    .domain([0,100])
+                    .range([height - padding.top - padding.bottom, 0]);
+    var xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom");
+    var yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left");
+    // add grid
+    var yInner = d3.svg.axis()
+                .scale(yScale)
+                .tickSize(-(width - padding.left - padding.right),0,0)
+                .tickFormat("")
+                .orient("left")
+                .ticks(10);
+                svg.append("g")
+                .attr("class", "inner_line")
+                .attr("transform", "translate("+ padding.left + "," + padding.top + ")")
+                .call(yInner);
+                
+                svg.append("g")
+                    .attr("class","axis")
+                    .attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
+                    .call(xAxis); 
+                svg.append("g")
+                    .attr("class","axis")
+                    .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                    .call(yAxis);
+</script>
+</body>
+<script>
+
+
+	var width  = 800;
+	var height = 800;
+
+	 var svg = d3.select("body").append("svg")
+      .attr("id", "map")
+	  .attr("width", width)
+	  .attr("height", height); 
+		
+	var projection = d3.geo.mercator()
+      .scale(180000)
+      .rotate([74, -40 - 45 / 60, 0])
+	  .translate([width / 4, height  / 60 ]);
+	
+	var path = d3.geo.path().projection(projection);
+	
+	var Brooklyn = [];
+			
+	d3.json("2010 Census Tracts.geojson", function(error, map) {
+		//console.log(map.features[0]["geometry"]["coordinates"]);
+		for(var index = 0; index < map.features.length; index++){
+			if(map["features"][index]["properties"]["boro_name"] == "Brooklyn")
+				Brooklyn.push(map.features[index]);
+		}
+		d3.tsv("House2010bk.csv", function(error, data) {
+		
+			var max = 0;
+		
+			for(var index1 = 0; index1 < data.length; index1++){
+				for(var index2 = 0; index2 < Brooklyn.length; index2++){
+					var ct1 = parseInt(Brooklyn[index2]["properties"]["ct2010"]);
+					var ct2 = parseInt(data[index1]["censustrack"]);
+					if(ct1 == ct2)
+					{
+						Brooklyn[index2]["properties"]["VacantPercentage"] = data[index1]["percentage"];
+						var percentage = parseFloat(data[index1]["percentage"]);
+						if(percentage > max)
+							max = percentage;
+						//console.log(Brooklyn[index2]["properties"]["ct2010"]);
+                        }
+					}
+				}
+			
+			var darkRed = d3.rgb("#750000");
+			var lightRed = d3.rgb("#FFD2D2");
+			var color = d3.interpolate(lightRed, darkRed);
+			
+			var linear = d3.scale.linear()
+							.domain([0, max])
+							.range([0, 1]);
+			
+			 //-----------------------color scale-------------------------------
+			var defs = svg.append("defs");
+			 
+			var linearGradient = defs.append("linearGradient")
+									.attr("id","linearColor")
+									.attr("x1","0%")
+									.attr("y1","0%")
+									.attr("x2","100%")
+									.attr("y2","0%");
+			 
+			var stop1 = linearGradient.append("stop")
+							.attr("offset","0%")
+							.style("stop-color",lightRed.toString());
+			var stop2 = linearGradient.append("stop")
+							.attr("offset","100%")
+							.style("stop-color",darkRed.toString());
+			
+			var colorRect = svg.append("rect")
+				.attr("x", 50)
+				.attr("y", 50)
+				.attr("width", 200)
+				.attr("height", 20)
+				.style("fill","url(#" + linearGradient.attr("id") + ")");
+				
+			var minValueText = svg.append("text")
+						.attr("class","valueText")
+						.attr("x", 30)
+						.attr("y", 85)
+						.text(function(){
+							return "0%";
+						});
+ 
+			var maxValueText = svg.append("text")
+						.attr("class","valueText")
+						.attr("x", 230)
+						.attr("y", 85)
+						.text(function(){
+							return "100%";
+						});							
+			svg.append("g")
+				.attr("class", "MAP")
+				.selectAll("path")
+				.data(Brooklyn)
+				.enter()
+				.append("path")
+				.attr("stroke","#000")
+				.attr("stroke-width",1)
+				.attr("fill",  function(data){
+					if(data["properties"]["VacantPercentage"] == undefined)
+						return "#8E8E8E";
+					else
+						return color(linear(parseFloat(data["properties"]["VacantPercentage"])));
+				})
+				//----------------------------hover-----------------------------------------
+				.attr("d", path )
+            .on("mouseover", function(data){
+//				$(".mouseover")
+//				.html("District Name: " + data["properties"]["ntaname"] + "<br> Price in 2008: " +Number(data["properties"]["Income"]).toFixed(3) + "</br> Price in 2015: " + Number(data["properties"]["Income"]).toFixed(3) )
+//				.css("display","inline")
+//				.css("position","absolute")
+//				.css("background","black")
+//				.css("background-color",d3.rgb(255,255,255,255))
+//				.css("border","1px solid #131313")
+//				.css("margin-left","100px")
+//				.css("margin-top","0px")
+//				.css("padding","5px 8px");
+				
+                d3.select(this).style("fill-opacity", 0.7);
+                d3.select("#default")
+                    .html("District: "+data["properties"]["ntaname"]+ "<br> Vacancy Rate in 2000: " + Number(data["properties"]["VacantPercentage"]).toFixed(2)+"%" + "<br>Vacancy Rate in 2010: " + Number(data["properties"]["VacantPercentage"]).toFixed(2)+"%")
+                            
+                var width = 400;
+                var height = 400;	
+                var svg = d3.select("#default")
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+                var padding = {left:50, right:30, top:20, bottom:20};
+                var dataset = [];
+                    dataset.push(Number(data["properties"]["VacantPercentage"]).toFixed(0));
+                    dataset.push(Number(data["properties"]["VacantPercentage"]).toFixed(0));
+  
+                var xScale = d3.scale.ordinal()
+                    .domain([2000,2010])
+                    .rangeRoundBands([0, width - padding.left - padding.right]);
+                var yScale = d3.scale.linear()
+                    .domain([0,100])
+                    .range([height - padding.top - padding.bottom, 0]);
+                var xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom");
+                var yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left");
+        
+                // add grid
+                var yInner = d3.svg.axis()
+                .scale(yScale)
+                .tickSize(-(width - padding.left - padding.right),0,0)
+                .tickFormat("")
+                .orient("left")
+                .ticks(10);
+                svg.append("g")
+                .attr("class", "inner_line")
+                .attr("transform", "translate("+ padding.left + "," + padding.top + ")")
+                .call(yInner);
+                
+                svg.append("g")
+                    .attr("class","axis")
+                    .attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
+                    .call(xAxis); 
+                svg.append("g")
+                    .attr("class","axis")
+                    .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                    .call(yAxis);
+                
+                var rectPadding = 100;
+                var rects = svg.selectAll(".MyRect")
+                    .data(dataset)
+                    .enter()
+                    .append("rect")
+                    .attr("class","MyRect")
+                    .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                    .attr("x", function(d,i){
+                        return xScale(2000+10*i) + rectPadding/2;
+                    } )
+                    .attr("y",function(d){
+                        return yScale(d);
+                    })
+                    .attr("width", xScale.rangeBand() - rectPadding )
+                    .attr("height", function(d){
+                        return height - padding.top - padding.bottom - yScale(d);
+                    })
+                    .attr("fill","crimson")		
+                var texts = svg.selectAll(".MyText")
+                    .data(dataset)
+                    .enter()
+                    .append("text")
+                    .attr("class","MyText")
+                    .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                    .attr("x", function(d,i){
+                        return xScale(2000+10*i) + rectPadding/2;
+                    } )
+                    .attr("y",function(d){
+                        return yScale(d);
+                    })
+                    .attr("dx",function(){
+                        return (xScale.rangeBand() - rectPadding)/2;
+                    })
+                    .attr("dy",function(d){
+                        return 20;
+                    })
+                    .text(function(d){
+                        return d;
+                    });
+            })						
+                .on("mouseout", function(data){
+							d3.select(this).style("fill-opacity", 1);
+						});
+
+//            }) ;
+
+		});
+		});
+</script>
+</html>  
