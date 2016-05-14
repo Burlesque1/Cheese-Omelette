@@ -9,20 +9,32 @@
 <script src="bower_components/heatmap.js-amd/build/heatmap.js"></script>
 <link rel=”stylesheet” type=”text/css” href=my.css”>  
     <style>
-        
         #default{
-            color:grey;
+            color:black;
             width: 400;
             height: 480;
             position: absolute;
             left: 650;
-            top:50;
+            top:130;
             font-family:"Georgia";
+            font-weight:bold;
             border: 1px grey ridge;
             padding-bottom: 0px;
+            text-align:center;
 /*          margin: 100px 100px 100px 100px;*/
         }    
-        
+        #title{
+            color:red;
+            left: 1350;
+            top:30;
+            font-size: 30px;
+            font-family:fantasy;
+            text-align:center;
+/*
+            border: 10px grey ridge;
+            padding-bottom: 0px;
+*/
+        }
     .axis path,
 	.axis line{
 		fill: none;
@@ -47,7 +59,9 @@
 	}
     </style>
 <body>
-    <div id="default">District:   <br>Price in 2008:  <br>Price in 2015:  </div>
+    <div id="title">Gentrification - Trends of Brooklyn Property Value Change</div>
+    <div id="default">District:   <br>% in 2000:  <br>% in 2010:  </div>
+    
     <script>   
 	//---------------------initialization-----------------------------
 	var width = 400;
@@ -92,11 +106,13 @@
 		.attr("transform","translate(" + padding.left + "," + padding.top + ")")
 		.call(yAxis);
 </script> 
-    
+   
    <div class = "mouseover"></div>
     <script> 
+        
+        //---------------------------------map------------------------------------------------- 
         var width  = 800;
-	    var height = 600;
+	    var height = 800;
     var svg = d3.select("body").append("svg")
       .attr("id", "map")
 	  .attr("width", width)
@@ -105,15 +121,11 @@
 	var projection = d3.geo.mercator()
       .scale(180000)
       .rotate([74, -40 - 45 / 60, 0])
-	  .translate([width / 5, height  / 40 ]);
+	  .translate([width / 4, height  / 60 ]);
 	
 	var path = d3.geo.path().projection(projection);
-	
 	var Brooklyn = [];
-			
-	d3.json("nta.geojson", function(error, map) {
-		//console.log(map.features[0]["geometry"]["coordinates"]);
-	
+	d3.json("nta.geojson", function(error, map) {	
 		for(var index = 0; index < map.features.length; index++){
 			if(map["features"][index]["properties"]["BoroName"] == "Brooklyn")
 				Brooklyn.push(map.features[index]);
@@ -158,7 +170,6 @@
 					var linear = d3.scale.linear()
 									.domain([0, max])
 									.range([0, 1]);
-					
 					svg.append("g")
 						.attr("class", "MAP")
 						.selectAll("path")
@@ -181,17 +192,17 @@
                     
     //---------------------------------hover---------------------------------------
 		.on("mouseover", function(data){
-			$(".mouseover")
-		      .html("District Name: " + data["properties"]["NTAName"] + "<br> Price in 2008: " +Number(data["properties"]["Price08"]).toFixed(3) + "</br> Price in 2015: " + Number(data["properties"]["Price15"]).toFixed(3) )
-			.css("display","inline")
-			.css("position","absolute")
-			.css("background","black")
-			.css("background-color",d3.rgb(255,255,255,255))
-			.css("border","1px solid #131313")
-			.css("margin-left","100px")
-			.css("margin-top","0px")
-			.css("padding","5px 8px");
-			d3.select(this).style("fill-opacity", 0.7);
+//			$(".mouseover")
+//		      .html("District Name: " + data["properties"]["NTAName"] + "<br> Price in 2008: " +Number(data["properties"]["Price08"]).toFixed(3) + "</br> Price in 2015: " + Number(data["properties"]["Price15"]).toFixed(3) )
+//			.css("display","inline")
+//			.css("position","absolute")
+//			.css("background","black")
+//			.css("background-color",d3.rgb(255,255,255,255))
+//			.css("border","1px solid #131313")
+//			.css("margin-left","400px")
+//			.css("margin-top","50px")
+//			.css("padding","5px 8px");
+//			d3.select(this).style("fill-opacity", 0.7);
             
             d3.select("#default")
                 .html("District: "+data["properties"]["NTAName"]+ "<br> Price in 2008: $" + Number(data["properties"]["Price08"]).toFixed(3)+"/sq" + "<br>Price in 2015: $" + Number(data["properties"]["Price15"]).toFixed(3)+"/sq")
@@ -229,16 +240,16 @@
     .tickFormat("")
     .orient("left")
     .ticks(10);
-
     svg.append("g")
     .attr("class", "inner_line")
     .attr("transform", "translate("+ padding.left + "," + padding.top + ")")
     .call(yInner);
+                        
+                        
 	svg.append("g")
 		.attr("class","axis")
 		.attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
-		.call(xAxis); 
-		
+		.call(xAxis); 		
 	svg.append("g")
 		.attr("class","axis")
 		.attr("transform","translate(" + padding.left + "," + padding.top + ")")
@@ -286,20 +297,20 @@
 			return d;
 		});
                     })        
-						.on("mouseout", function(data){
-							$(".mouseover")
-								//.css("display","none")
-								.css("color","#000")
-                                .css("font-family","Georgia")
-								.css("position","absolute")
-								.css("background","black")
-								.css("background-color",d3.rgb(255,255,255,255))
-								.css("border","1px solid #131313")
-								.css("margin-left","100px")
-								.css("margin-top","0px")
-								.css("padding","5px 8px");
-							d3.select(this).style("fill-opacity", 1);
-						});
+//						.on("mouseout", function(data){
+//							$(".mouseover")
+//								//.css("display","none")
+//								.css("color","#000")
+//                                .css("font-family","Georgia")
+//								.css("position","absolute")
+//								.css("background","black")
+//								.css("background-color",d3.rgb(255,255,255,255))
+//								.css("border","1px solid #131313")
+//								.css("margin-left","100px")
+//								.css("margin-top","0px")
+//								.css("padding","5px 8px");
+//							d3.select(this).style("fill-opacity", 1);
+//						});
 				});
 		});		
 	});
