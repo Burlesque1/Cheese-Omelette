@@ -257,7 +257,7 @@
 				.attr("d", path ) .on("mouseover", function(data){
                 d3.select(this).style("fill-opacity", 0.7);
                 d3.select("#default")
-                    .html("District: "+data["properties"]["ntaname"]+ "<br> Income in 2009: " + Number(data["properties"]["Income09"]).toFixed(0)+" dollars/sq" + "<br>Income in 2014: " + Number(data["properties"]["Income"]).toFixed(0)+" dollars/sq")
+                    .html("District: "+data["properties"]["ntaname"]+ "<br> Income in 2009: " + Number(data["properties"]["Income09"]).toFixed(0)+" dollars" + "<br>Income in 2014: " + Number(data["properties"]["Income"]).toFixed(0)+" dollars")
                             
                 var width = 400;
                 var height = 400;	
