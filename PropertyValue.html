@@ -159,7 +159,9 @@
 						.attr("fill", function(data){
 							var diff = parseFloat(data["properties"]["Diff"]);
 							// console.log(diff);
-							if(diff <= 0)
+							if(["properties"]["Price15"] < ["properties"]["Price08"])
+								return "	#2828FF";
+							else if(diff <= 0)
 								return "#8E8E8E";
 							else
 								return color(linear(diff));
