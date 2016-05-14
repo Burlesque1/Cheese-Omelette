@@ -10,7 +10,7 @@
 <link rel=”stylesheet” type=”text/css” href=my.css”>  
     <style>
         #default{
-            color:black;
+            color:SandyBrown;
             width: 400;
             height: 480;
             position: absolute;
@@ -60,7 +60,7 @@
     </style>
 <body>
     <div id="title">Gentrification - Trends of Brooklyn Property Value Change</div>
-    <div id="default">District:   <br>% in 2000:  <br>% in 2010:  </div>
+    <div id="default">District:   <br>Price in 2000:  <br>Price in 2010:  </div>
     
     <script>   
 	//---------------------initialization-----------------------------
@@ -162,14 +162,63 @@
 							max = diff;
 						Brooklyn[index]["properties"]["Diff"] = diff;
 					}
-					// console.log(Brooklyn);
+					
+                
+                // console.log(Brooklyn);
 					var orange = d3.rgb(253, 120, 3);
-					var lightOrange = d3.rgb(255, 201, 154);
+					var lightOrange = d3.rgb(254, 185, 84);
+                    var minusvalue=d3.rgb(255,250,165);
 					var color = d3.interpolate(lightOrange, orange);
 					
 					var linear = d3.scale.linear()
 									.domain([0, max])
 									.range([0, 1]);
+                //-----------------------color scale-------------------------------
+			var defs = svg.append("defs");
+			 
+			var linearGradient = defs.append("linearGradient")
+									.attr("id","linearColor")
+									.attr("x1","0%")
+									.attr("y1","0%")
+									.attr("x2","100%")
+									.attr("y2","0%");
+			 
+			var stop1 = linearGradient.append("stop")
+							.attr("offset","0%")
+							.style("stop-color",minusvalue.toString());
+			var stop2 = linearGradient.append("stop")
+							.attr("offset","100%")
+							.style("stop-color",orange.toString());
+			
+			var colorRect = svg.append("rect")
+				.attr("x", 50)
+				.attr("y", 50)
+				.attr("width", 200)
+				.attr("height", 20)
+				.style("fill","url(#" + linearGradient.attr("id") + ")");
+				
+			var minValueText = svg.append("text")
+						.attr("class","valueText")
+						.attr("x", 30)
+						.attr("y", 85)
+						.text(function(){
+							return -72;
+						});
+            var zeroValueText = svg.append("text")
+						.attr("class","valueText")
+						.attr("x", 140)
+						.attr("y", 85)
+						.text(function(){
+							return "0";
+						});
+ 
+			var maxValueText = svg.append("text")
+						.attr("class","valueText")
+						.attr("x", 230)
+						.attr("y", 85)
+						.text(function(){
+							return "+60";
+						});
 					svg.append("g")
 						.attr("class", "MAP")
 						.selectAll("path")
@@ -182,9 +231,9 @@
 							var diff = parseFloat(data["properties"]["Diff"]);
 							// console.log(diff);
 							if(parseFloat(data["properties"]["Price15"]) < parseFloat(data["properties"]["Price08"]))
-								return "#AAAAFF";
+								return minusvalue;
 							else if(diff <= 0)
-								return "#8E8E8E";
+								return "#ffd29a";
 							else
 								return color(linear(diff));
 						})
@@ -202,8 +251,8 @@
 //			.css("margin-left","400px")
 //			.css("margin-top","50px")
 //			.css("padding","5px 8px");
-//			d3.select(this).style("fill-opacity", 0.7);
-            
+			
+            d3.select(this).style("fill-opacity", 0.7);
             d3.select("#default")
                 .html("District: "+data["properties"]["NTAName"]+ "<br> Price in 2008: $" + Number(data["properties"]["Price08"]).toFixed(3)+"/sq. ft" + "<br>Price in 2015: $" + Number(data["properties"]["Price15"]).toFixed(3)+"/sq. ft")
         
@@ -274,7 +323,7 @@
 		.attr("height", function(d){
 			return height - padding.top - padding.bottom - yScale(d);
 		})
-		.attr("fill","steelblue")		
+		.attr("fill","SandyBrown")		
 	var texts = svg.selectAll(".MyText")
 		.data(dataset)
 		.enter()
@@ -297,7 +346,7 @@
 			return d;
 		});
                     })        
-//						.on("mouseout", function(data){
+						.on("mouseout", function(data){
 //							$(".mouseover")
 //								//.css("display","none")
 //								.css("color","#000")
@@ -309,8 +358,8 @@
 //								.css("margin-left","100px")
 //								.css("margin-top","0px")
 //								.css("padding","5px 8px");
-//							d3.select(this).style("fill-opacity", 1);
-//						});
+							d3.select(this).style("fill-opacity", 1);
+						});
 				});
 		});		
 	});
