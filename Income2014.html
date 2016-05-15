@@ -10,7 +10,7 @@
 <style>
 
         #default{
-           color:black;
+           color:steelblue;
             width: 400;
             height: 480;
             position: absolute;
@@ -25,7 +25,7 @@
 
         }  
         #title{
-            color:red;
+            color:steelblue;
             left: 650;
             top:30;
             font-size: 30px;
@@ -254,12 +254,10 @@
 					else
 						return "#8E8E8E";
 				})
-				.attr("d", path ) 
-                .on("mouseover", function(data){
-                
-               d3.select(this).style("fill-opacity", 0.7);
+				.attr("d", path ) .on("mouseover", function(data){
+                d3.select(this).style("fill-opacity", 0.7);
                 d3.select("#default")
-                    .html("District: "+data["properties"]["ntaname"]+ "<br> Income in 2009: " + Number(data["properties"]["Income09"]).toFixed(0)+" dollars" + "<br>Income in 2014: " + Number(data["properties"]["Income"]).toFixed(0)+" dollars")
+                    .html("District: "+data["properties"]["ntaname"]+ "<br> Income in 2009: " + Number(data["properties"]["Income09"]).toFixed(0)+" dollars/sq" + "<br>Income in 2014: " + Number(data["properties"]["Income"]).toFixed(0)+" dollars/sq")
                             
                 var width = 400;
                 var height = 400;	
@@ -323,7 +321,7 @@
                         return height - padding.top - padding.bottom - yScale(d);
                     })
                     .attr("fill","steelblue")		
-               var texts = svg.selectAll(".MyText")
+                var texts = svg.selectAll(".MyText")
                     .data(dataset)
                     .enter()
                     .append("text")
@@ -344,14 +342,12 @@
                     .text(function(d){
                         return d;
                     });
-            })						
-                .on("mouseout", function(data){
+            })	
+             .on("mouseout", function(data){
 							d3.select(this).style("fill-opacity", 1);
 						});
-
-            }) ;
-
 		});
 		});
+    });
 </script>
 </html>  
