@@ -9,7 +9,7 @@
 <link rel=”stylesheet” type=”text/css” href=my.css”>
 <style>
  #default{
-            color:black;
+            color:crimson;
             width: 400;
             height: 480;
             position: absolute;
@@ -23,7 +23,7 @@
 /*          margin: 100px 100px 100px 100px;*/
         }    
         #title{
-            color:red;
+            color:crimson;
             left: 1350;
             top:30;
             font-size: 30px;
@@ -180,7 +180,45 @@
 			var linear = d3.scale.linear()
 							.domain([0, max])
 							.range([0, 1]);
+			 //-----------------------color scale-------------------------------
+			var defs = svg.append("defs");
+			 
+			var linearGradient = defs.append("linearGradient")
+									.attr("id","linearColor")
+									.attr("x1","0%")
+									.attr("y1","0%")
+									.attr("x2","100%")
+									.attr("y2","0%");
+			 
+			var stop1 = linearGradient.append("stop")
+							.attr("offset","0%")
+							.style("stop-color",lightRed.toString());
+			var stop2 = linearGradient.append("stop")
+							.attr("offset","100%")
+							.style("stop-color",darkRed.toString());
 			
+			var colorRect = svg.append("rect")
+				.attr("x", 50)
+				.attr("y", 50)
+				.attr("width", 200)
+				.attr("height", 20)
+				.style("fill","url(#" + linearGradient.attr("id") + ")");
+				
+			var minValueText = svg.append("text")
+						.attr("class","valueText")
+						.attr("x", 30)
+						.attr("y", 85)
+						.text(function(){
+							return "0%";
+						});
+ 
+			var maxValueText = svg.append("text")
+						.attr("class","valueText")
+						.attr("x", 230)
+						.attr("y", 85)
+						.text(function(){
+							return "100%";
+						});				
 			
 			svg.append("g")
 				.attr("class", "MAP")
